@@ -34,7 +34,7 @@ internal sealed class InstallerEngine
 
         Report(progress, InstallerStage.Initializing, 2, "Preparing installer workspace...");
 
-        var tempRoot = Path.Combine(Path.GetTempPath(), "ElochkaInstaller", Guid.NewGuid().ToString("N"));
+        var tempRoot = Path.Combine(Path.GetTempPath(), "BerezkaInstaller", Guid.NewGuid().ToString("N"));
         var downloadDirectory = Path.Combine(tempRoot, "downloads");
         var archivePath = Path.Combine(downloadDirectory, _manifest.ArchiveName);
         var stagingDirectory = Path.Combine(installParent, $".elochka-stage-{Guid.NewGuid():N}");

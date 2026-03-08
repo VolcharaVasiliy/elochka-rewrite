@@ -3,12 +3,14 @@ namespace Elochka.App;
 internal static class ElochkaPaths
 {
     private static readonly object SyncRoot = new();
+    private static readonly string LegacySharedDataRoot =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "Elochka");
     private static string? _resolvedPaddlexCacheHome;
 
     public static string AppRoot => AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
     public static string SharedDataRoot => EnsureDirectory(
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "Elochka"));
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonDocuments), "Berezka"));
 
     public static string SettingsFilePath => Path.Combine(SharedDataRoot, "settings.ini");
 
@@ -27,13 +29,20 @@ internal static class ElochkaPaths
     public static void MigrateLegacySettingsIfNeeded()
     {
         var legacySettingsPath = Path.Combine(AppRoot, "settings.ini");
-        if (File.Exists(SettingsFilePath) || !File.Exists(legacySettingsPath))
+        if (!File.Exists(SettingsFilePath) && File.Exists(legacySettingsPath))
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
+            File.Copy(legacySettingsPath, SettingsFilePath, overwrite: false);
+        }
+
+        var legacySharedSettingsPath = Path.Combine(LegacySharedDataRoot, "settings.ini");
+        if (File.Exists(SettingsFilePath) || !File.Exists(legacySharedSettingsPath))
         {
             return;
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
-        File.Copy(legacySettingsPath, SettingsFilePath, overwrite: false);
+        File.Copy(legacySharedSettingsPath, SettingsFilePath, overwrite: false);
     }
 
     public static string ResolvePaddlexCacheHome()

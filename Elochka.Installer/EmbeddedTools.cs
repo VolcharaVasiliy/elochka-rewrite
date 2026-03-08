@@ -23,7 +23,7 @@ internal sealed class EmbeddedTools : IDisposable
 
     public static EmbeddedTools Create()
     {
-        var rootPath = Path.Combine(Path.GetTempPath(), "ElochkaInstaller", $"tools-{Guid.NewGuid():N}");
+        var rootPath = Path.Combine(Path.GetTempPath(), "BerezkaInstaller", $"tools-{Guid.NewGuid():N}");
         Directory.CreateDirectory(rootPath);
 
         var aria2Path = ExtractResource(rootPath, "aria2c.exe", "aria2c.exe");

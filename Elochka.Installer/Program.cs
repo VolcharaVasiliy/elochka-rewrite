@@ -16,7 +16,7 @@ internal static class Program
         {
             MessageBox.Show(
                 exception.Message,
-                "Elochka Installer",
+                "Berezka Installer",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
             return 2;
@@ -31,7 +31,7 @@ internal static class Program
         {
             MessageBox.Show(
                 exception.Message,
-                "Elochka Installer",
+                "Berezka Installer",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
             return 3;

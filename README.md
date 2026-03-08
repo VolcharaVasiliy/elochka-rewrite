@@ -1,4 +1,4 @@
-# Elochka Rewrite
+# Berezka Rewrite
 
 Windows tray OCR translator focused on game overlays and low-latency local translation.
 
@@ -52,16 +52,16 @@ What the bootstrap does:
 - installs Python packages for OCR and local translation
 - downloads and prepares the NLLB local model
 - downloads and warms the PaddleOCR models
-- builds `Elochka.sln`
+- builds `Berezka.sln`
 
 ## Build
 ```powershell
-dotnet build .\Elochka.sln
+dotnet build .\Berezka.sln
 ```
 
 ## Run From Source Tree
 ```powershell
-.\Elochka.App\bin\Debug\net7.0-windows10.0.19041.0\Elochka.App.exe
+.\Elochka.App\bin\Debug\net7.0-windows10.0.19041.0\Berezka.App.exe
 ```
 
 ## Build Portable Release
@@ -82,7 +82,7 @@ What it does:
 - publishes a single-file Windows x64 installer executable
 
 Output:
-- `release\Elochka.Setup-<tag>-win-x64.exe`
+- `release\Berezka.Setup-<tag>-win-x64.exe`
 
 Important:
 - the bootstrap installer can only download from a publicly reachable release URL

@@ -15,7 +15,7 @@ if ([string]::IsNullOrWhiteSpace($ProjectRoot))
 
 $nllbSetupScript = Join-Path $scriptDir "setup_local_nllb.ps1"
 $paddleSetupScript = Join-Path $scriptDir "setup_local_paddle_ocr.ps1"
-$solutionPath = Join-Path $ProjectRoot "Elochka.sln"
+$solutionPath = Join-Path $ProjectRoot "Berezka.sln"
 
 Write-Host "Bootstrapping PaddleOCR..."
 & $paddleSetupScript -ProjectRoot $ProjectRoot -PythonExe $PythonExe

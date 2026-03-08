@@ -4,6 +4,8 @@ namespace Elochka.App.Forms;
 
 internal sealed class SettingsForm : Form
 {
+    private const string BrandNameRu = "БерЁзка";
+
     private readonly ComboBox _providerComboBox;
     private readonly ComboBox _hotKeyComboBox;
     private readonly TextBox _fontFamilyTextBox;
@@ -35,7 +37,7 @@ internal sealed class SettingsForm : Form
         MinimizeBox = false;
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.CenterScreen;
-        Text = "Настройки Ёлочки";
+        Text = $"Настройки {BrandNameRu}";
         Width = 680;
         Height = 620;
 
@@ -108,7 +110,7 @@ internal sealed class SettingsForm : Form
             formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         }
 
-        formLayout.Controls.Add(CreateLabel("Кнопка"), 0, 0);
+        formLayout.Controls.Add(CreateLabel("Горячая клавиша"), 0, 0);
         formLayout.Controls.Add(_hotKeyComboBox, 1, 0);
         formLayout.Controls.Add(CreateLabel("Шрифт"), 0, 1);
         formLayout.Controls.Add(_fontFamilyTextBox, 1, 1);

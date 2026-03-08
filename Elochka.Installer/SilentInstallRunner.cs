@@ -10,7 +10,7 @@ internal static class SilentInstallRunner
             ? manifest.GetDefaultInstallDirectory()
             : options.InstallDirectory;
         var logPath = string.IsNullOrWhiteSpace(options.LogPath)
-            ? Path.Combine(Path.GetTempPath(), "ElochkaInstaller", "silent-install.log")
+            ? Path.Combine(Path.GetTempPath(), "BerezkaInstaller", "silent-install.log")
             : options.LogPath;
 
         Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);

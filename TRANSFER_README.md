@@ -1,4 +1,4 @@
-# Elochka Transfer
+# Berezka Transfer
 
 ## What Is Included
 - `Projects\elochka` - full source tree, scripts, models, OCR cache, current build output, logs, and solution files.
@@ -12,14 +12,14 @@
 
 ## Run
 - App executable:
-  - `F:\Projects\elochka\Elochka.App\bin\Debug\net7.0-windows10.0.19041.0\Elochka.App.exe`
+  - `F:\Projects\berezka\Elochka.App\bin\Debug\net7.0-windows10.0.19041.0\Berezka.App.exe`
 
 ## Build
 - Solution:
-  - `F:\Projects\elochka\Elochka.sln`
+  - `F:\Projects\berezka\Berezka.sln`
 - Example:
 ```powershell
-dotnet build F:\Projects\elochka\Elochka.sln
+dotnet build F:\Projects\berezka\Berezka.sln
 ```
 
 ## If You Extract Elsewhere

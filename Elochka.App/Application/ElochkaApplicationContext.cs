@@ -12,6 +12,7 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
 {
     private const int HotkeyId = 0xE110;
     private const int DoubleTapDelayMs = 275;
+    private const string BrandNameRu = "БерЁзка";
 
     private readonly HotkeyWindow _hotkeyWindow;
     private readonly SettingsStore _settingsStore;
@@ -19,6 +20,7 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
     private readonly ResultForm _resultForm;
     private readonly System.Windows.Forms.Timer _singleTapTimer;
     private readonly ToolStripMenuItem _hotKeyMenuItem;
+    private readonly Dictionary<HotKeyMode, ToolStripMenuItem> _hotKeyModeItems = new();
     private readonly ToolStripMenuItem _repeatMenuItem;
     private readonly ToolStripMenuItem _pauseMenuItem;
     private readonly HttpClient _httpClient;
@@ -62,7 +64,7 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
         _resultForm.ApplySettings(_settings);
 
         var trayMenu = new ContextMenuStrip();
-        _hotKeyMenuItem = new ToolStripMenuItem { Enabled = false };
+        _hotKeyMenuItem = CreateHotKeyMenuItem();
         _repeatMenuItem = new ToolStripMenuItem("Перевести последнюю область", null, (_, _) => ProcessLastRegion());
         _pauseMenuItem = new ToolStripMenuItem(string.Empty, null, (_, _) => TogglePause());
         var settingsMenuItem = new ToolStripMenuItem("Настройки...", null, (_, _) => OpenSettings());
@@ -83,7 +85,7 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
         {
             ContextMenuStrip = trayMenu,
             Icon = SystemIcons.Application,
-            Text = "Ёлочка",
+            Text = BrandNameRu,
             Visible = true,
         };
         _notifyIcon.DoubleClick += (_, _) => TogglePause();
@@ -143,7 +145,7 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
             _settings.Paused = true;
             MessageBox.Show(
                 $"Не удалось инициализировать OCR: {exception.Message}",
-                "Ёлочка",
+                BrandNameRu,
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Warning);
         }
@@ -151,15 +153,7 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
 
     private void RegisterHotKey()
     {
-        User32.UnregisterHotKey(_hotkeyWindow.Handle, HotkeyId);
-        var modifiers = _settings.HotKeyMode.GetModifiers();
-        var virtualKey = (uint)_settings.HotKeyMode.GetKey();
-
-        if (!User32.RegisterHotKey(_hotkeyWindow.Handle, HotkeyId, modifiers, virtualKey))
-        {
-            var error = Marshal.GetLastWin32Error();
-            ShowBalloon("Горячая клавиша", $"Не удалось зарегистрировать хоткей. Win32={error}");
-        }
+        TryRegisterHotKey(_settings.HotKeyMode, showError: true);
     }
 
     private void OnHotkeyPressed(object? sender, EventArgs e)
@@ -290,9 +284,15 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
             return;
         }
 
+        var previousHotKey = _settings.HotKeyMode;
         _settings = dialog.ResultSettings.Clone();
+        if (!TryRegisterHotKey(_settings.HotKeyMode, showError: true))
+        {
+            _settings.HotKeyMode = previousHotKey;
+            TryRegisterHotKey(previousHotKey, showError: false);
+        }
+
         _settingsStore.Save(_settings);
-        RegisterHotKey();
         _resultForm.ApplySettings(_settings);
         RefreshUiState();
         StartBackgroundWarmup();
@@ -320,9 +320,14 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
     private void RefreshUiState()
     {
         _hotKeyMenuItem.Text = $"Горячая клавиша: {_settings.HotKeyMode.GetDisplayName()}";
+        foreach (var (mode, item) in _hotKeyModeItems)
+        {
+            item.Checked = mode == _settings.HotKeyMode;
+        }
+
         _repeatMenuItem.Enabled = !_lastRegion.IsEmpty && !_settings.Paused && _activeCaptureCts is null;
         _pauseMenuItem.Text = _settings.Paused ? "Возобновить" : "Пауза";
-        _notifyIcon.Text = _settings.Paused ? "Ёлочка (пауза)" : "Ёлочка";
+        _notifyIcon.Text = _settings.Paused ? $"{BrandNameRu} (пауза)" : BrandNameRu;
         _notifyIcon.Icon = _settings.Paused ? SystemIcons.Warning : SystemIcons.Application;
     }
 
@@ -331,6 +336,63 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
         _notifyIcon.BalloonTipTitle = title;
         _notifyIcon.BalloonTipText = text;
         _notifyIcon.ShowBalloonTip(2500);
+    }
+
+    private ToolStripMenuItem CreateHotKeyMenuItem()
+    {
+        var menuItem = new ToolStripMenuItem("Горячая клавиша");
+
+        foreach (var mode in Enum.GetValues<HotKeyMode>())
+        {
+            var optionItem = new ToolStripMenuItem(mode.GetDisplayName())
+            {
+                CheckOnClick = false,
+            };
+            optionItem.Click += (_, _) => ChangeHotKeyMode(mode);
+            _hotKeyModeItems[mode] = optionItem;
+            menuItem.DropDownItems.Add(optionItem);
+        }
+
+        return menuItem;
+    }
+
+    private void ChangeHotKeyMode(HotKeyMode mode)
+    {
+        if (_settings.HotKeyMode == mode)
+        {
+            return;
+        }
+
+        var previousMode = _settings.HotKeyMode;
+        if (!TryRegisterHotKey(mode, showError: true))
+        {
+            TryRegisterHotKey(previousMode, showError: false);
+            return;
+        }
+
+        _settings.HotKeyMode = mode;
+        _settingsStore.Save(_settings);
+        RefreshUiState();
+    }
+
+    private bool TryRegisterHotKey(HotKeyMode mode, bool showError)
+    {
+        User32.UnregisterHotKey(_hotkeyWindow.Handle, HotkeyId);
+        var modifiers = mode.GetModifiers();
+        var virtualKey = (uint)mode.GetKey();
+
+        if (User32.RegisterHotKey(_hotkeyWindow.Handle, HotkeyId, modifiers, virtualKey))
+        {
+            return true;
+        }
+
+        if (showError)
+        {
+            var error = Marshal.GetLastWin32Error();
+            ShowBalloon("Горячая клавиша", $"Не удалось зарегистрировать хоткей. Win32={error}");
+        }
+
+        return false;
     }
 
     private void StartBackgroundWarmup()

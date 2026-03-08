@@ -50,7 +50,7 @@ $downloadCacheRoot = Join-Path $installerCacheRoot "downloads"
 $releaseRoot = Join-Path $ProjectRoot "release"
 $installerPublishRoot = Join-Path $releaseRoot "installer-publish"
 $manifestPath = Join-Path $installerProjectRoot "installer-manifest.json"
-$finalInstallerPath = Join-Path $releaseRoot "Elochka.Setup-$Tag-$RuntimeIdentifier.exe"
+$finalInstallerPath = Join-Path $releaseRoot "Berezka.Setup-$Tag-$RuntimeIdentifier.exe"
 
 Ensure-FileExists -Path $installerProjectPath -Label "Installer project"
 Ensure-FileExists -Path $SevenZipExe -Label "7z executable"
@@ -58,7 +58,7 @@ Ensure-FileExists -Path $SevenZipDll -Label "7z library"
 
 if ([string]::IsNullOrWhiteSpace($ReleaseArchivePath))
 {
-    $candidateArchives = Get-ChildItem -Path $releaseRoot -File -Filter "elochka-$Tag-$RuntimeIdentifier*_7z_lzma2_mx5_solid.7z"
+    $candidateArchives = Get-ChildItem -Path $releaseRoot -File -Filter "berezka-$Tag-$RuntimeIdentifier*_7z_lzma2_mx5_solid.7z"
     if ($candidateArchives.Count -ne 1)
     {
         throw "Expected exactly one release archive for tag $Tag in $releaseRoot."
@@ -110,15 +110,15 @@ New-Item -ItemType Directory -Force -Path $aria2ToolRoot | Out-Null
 Copy-Item -LiteralPath $aria2Exe.FullName -Destination (Join-Path $aria2ToolRoot "aria2c.exe") -Force
 
 $manifest = [ordered]@{
-    productName = "Elochka"
+    productName = "Berezka"
     versionTag = $Tag
     downloadUrl = $DownloadUrl
     archiveName = $releaseArchiveItem.Name
     archiveSizeBytes = $releaseArchiveItem.Length
     archiveSha256 = $releaseArchiveHash
-    mainExecutableRelativePath = "Elochka.App.exe"
-    shortcutName = "Elochka"
-    defaultInstallSubdirectory = "Elochka"
+    mainExecutableRelativePath = "Berezka.App.exe"
+    shortcutName = "Berezka"
+    defaultInstallSubdirectory = "Berezka"
     releasePageUrl = "https://github.com/$Owner/$Repository/releases/tag/$Tag"
 } | ConvertTo-Json
 
@@ -145,7 +145,7 @@ if ($LASTEXITCODE -ne 0)
     throw "dotnet publish failed with exit code $LASTEXITCODE"
 }
 
-$publishedInstaller = Join-Path $installerPublishRoot "Elochka.Setup.exe"
+$publishedInstaller = Join-Path $installerPublishRoot "Berezka.Setup.exe"
 Ensure-FileExists -Path $publishedInstaller -Label "Published installer"
 Copy-Item -LiteralPath $publishedInstaller -Destination $finalInstallerPath -Force
 

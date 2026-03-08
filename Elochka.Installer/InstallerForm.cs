@@ -61,7 +61,7 @@ internal sealed class InstallerForm : Form
             Size = new Size(210, 42),
             Font = new Font("Segoe UI Semibold", 23.0f, FontStyle.Bold),
             ForeColor = Color.White,
-            Text = "Elochka",
+            Text = _manifest.ProductName,
         };
 
         var setupLabel = new Label
@@ -120,7 +120,7 @@ internal sealed class InstallerForm : Form
             Font = new Font("Segoe UI Semibold", 21.0f, FontStyle.Bold),
             ForeColor = Color.FromArgb(33, 37, 41),
             Location = new Point(0, 0),
-            Text = "Install Elochka",
+            Text = $"Install {_manifest.ProductName}",
         };
 
         var headerSubtitle = new Label
@@ -363,7 +363,7 @@ internal sealed class InstallerForm : Form
     {
         using var dialog = new FolderBrowserDialog
         {
-            Description = "Select the folder where Elochka will be installed.",
+            Description = $"Select the folder where {_manifest.ProductName} will be installed.",
             UseDescriptionForTitle = true,
             SelectedPath = _installDirectoryTextBox.Text,
         };

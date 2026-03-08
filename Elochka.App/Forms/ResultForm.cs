@@ -10,6 +10,7 @@ internal sealed class ResultForm : Form
     private const int MinPopupHeight = 72;
     private const int MaxPopupHeight = 260;
     private const int ContentPadding = 12;
+    private const string BrandNameRu = "БерЁзка";
 
     private readonly Panel _contentPanel;
     private readonly RichTextBox _translationTextBox;
@@ -25,7 +26,7 @@ internal sealed class ResultForm : Form
         Padding = new Padding(1);
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;
-        Text = "Ёлочка";
+        Text = BrandNameRu;
         TopMost = true;
         Width = 420;
         Height = 120;

@@ -171,18 +171,18 @@ function Write-ReleaseReadme
     param([string]$Path)
 
     $content = @"
-# Elochka Release
+# Berezka Release
 
 ## Contents
-- `Elochka.App.exe` - main executable.
+- `Berezka.App.exe` - main executable.
 - `python\` - bundled Python runtime for local OCR and translation.
 - `offline-models\` - bundled local translation model.
 - `paddlex-cache\official_models\` - bundled PaddleOCR models.
 
 ## Run
 1. Extract the folder anywhere on disk.
-2. Start `Elochka.App.exe`.
-3. On first run the app will create its user data under `C:\Users\Public\Documents\Elochka`.
+2. Start `Berezka.App.exe`.
+3. On first run the app will create its user data under `C:\Users\Public\Documents\Berezka`.
 
 ## Requirements
 - Windows 10 x64 or newer.
@@ -191,7 +191,7 @@ function Write-ReleaseReadme
 ## Notes
 - Do not delete the `python`, `offline-models`, or `paddlex-cache` folders.
 - This build runs fully locally with the bundled NLLB and PaddleOCR stacks.
-- Runtime settings, logs, OCR cache, and fallback Paddle runtime files live under `C:\Users\Public\Documents\Elochka`.
+- Runtime settings, logs, OCR cache, and fallback Paddle runtime files live under `C:\Users\Public\Documents\Berezka`.
 "@
 
     Set-Content -Path $Path -Value $content -Encoding UTF8
@@ -200,7 +200,7 @@ function Write-ReleaseReadme
 $appProject = Join-Path $ProjectRoot "Elochka.App\Elochka.App.csproj"
 $releaseRoot = Join-Path $ProjectRoot "release"
 $publishRoot = Join-Path $releaseRoot "publish"
-$packageName = "elochka-$Version-$RuntimeIdentifier"
+$packageName = "berezka-$Version-$RuntimeIdentifier"
 $packageRoot = Join-Path $releaseRoot $packageName
 $archivePath = Join-Path $releaseRoot "$packageName`_7z_lzma2_mx5_solid.7z"
 
@@ -217,8 +217,8 @@ if ([string]::IsNullOrWhiteSpace($PaddlexSource))
     $PaddlexSource = Join-Path $ProjectRoot ".paddlex-cache\official_models"
 }
 
-Write-Host "Stopping running Elochka.App processes..."
-Get-Process -Name "Elochka.App" -ErrorAction SilentlyContinue | Stop-Process -Force
+Write-Host "Stopping running Berezka.App processes..."
+Get-Process -Name "Berezka.App","Elochka.App" -ErrorAction SilentlyContinue | Stop-Process -Force
 
 Write-Host "Preparing release directories..."
 New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null

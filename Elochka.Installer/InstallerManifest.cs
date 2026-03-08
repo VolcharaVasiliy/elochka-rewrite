@@ -5,7 +5,7 @@ namespace Elochka.Installer;
 
 internal sealed class InstallerManifest
 {
-    public string ProductName { get; init; } = "Elochka";
+    public string ProductName { get; init; } = "Berezka";
 
     public string VersionTag { get; init; } = string.Empty;
 
@@ -17,11 +17,11 @@ internal sealed class InstallerManifest
 
     public string ArchiveSha256 { get; init; } = string.Empty;
 
-    public string MainExecutableRelativePath { get; init; } = "Elochka.App.exe";
+    public string MainExecutableRelativePath { get; init; } = "Berezka.App.exe";
 
-    public string ShortcutName { get; init; } = "Elochka";
+    public string ShortcutName { get; init; } = "Berezka";
 
-    public string DefaultInstallSubdirectory { get; init; } = "Elochka";
+    public string DefaultInstallSubdirectory { get; init; } = "Berezka";
 
     public string ReleasePageUrl { get; init; } = string.Empty;
 
