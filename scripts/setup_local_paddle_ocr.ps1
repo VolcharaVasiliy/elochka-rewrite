@@ -1,16 +1,69 @@
+[CmdletBinding()]
 param(
-    [string]$PythonExe = "F:\DevTools\Python311\python.exe",
-    [string]$PaddleHome = "F:\Projects\elochka\.paddle-home",
-    [string]$PaddlexCacheHome = "F:\Projects\elochka\.paddlex-cache",
-    [string]$BootstrapDir = "F:\Projects\elochka\.tmp",
-    [string]$PipCacheDir = "F:\DevTools\pip-cache"
+    [string]$ProjectRoot,
+    [string]$PythonExe,
+    [string]$PaddleHome,
+    [string]$PaddlexCacheHome,
+    [string]$BootstrapDir,
+    [string]$PipCacheDir
 )
 
 $ErrorActionPreference = "Stop"
 
-if (-not (Test-Path -LiteralPath $PythonExe))
+$scriptDir = Split-Path -Parent $PSCommandPath
+if ([string]::IsNullOrWhiteSpace($ProjectRoot))
 {
-    throw "Python runtime not found: $PythonExe"
+    $ProjectRoot = Split-Path -Parent $scriptDir
+}
+
+function Resolve-PythonExecutable
+{
+    param([string]$ExplicitPath)
+
+    $rootedCandidates = @(
+        $ExplicitPath,
+        $env:ELOCHKA_PYTHON,
+        (Join-Path $ProjectRoot "python\python.exe"),
+        "F:\DevTools\Python311\python.exe"
+    ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+    foreach ($candidate in $rootedCandidates)
+    {
+        if (Test-Path -LiteralPath $candidate -PathType Leaf)
+        {
+            return (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+
+    $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCommand)
+    {
+        return $pythonCommand.Source
+    }
+
+    throw "Python runtime not found. Install Python 3.11+ or set ELOCHKA_PYTHON/-PythonExe."
+}
+
+$PythonExe = Resolve-PythonExecutable -ExplicitPath $PythonExe
+
+if ([string]::IsNullOrWhiteSpace($PaddleHome))
+{
+    $PaddleHome = Join-Path $ProjectRoot ".paddle-home"
+}
+
+if ([string]::IsNullOrWhiteSpace($PaddlexCacheHome))
+{
+    $PaddlexCacheHome = Join-Path $ProjectRoot ".paddlex-cache"
+}
+
+if ([string]::IsNullOrWhiteSpace($BootstrapDir))
+{
+    $BootstrapDir = Join-Path $ProjectRoot ".tmp"
+}
+
+if ([string]::IsNullOrWhiteSpace($PipCacheDir))
+{
+    $PipCacheDir = Join-Path $ProjectRoot ".pip-cache"
 }
 
 New-Item -ItemType Directory -Force -Path $PaddleHome | Out-Null
@@ -23,7 +76,7 @@ $env:PADDLE_HOME = $PaddleHome
 $env:PADDLE_PDX_CACHE_HOME = $PaddlexCacheHome
 $env:PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK = "True"
 
-& $PythonExe -m pip install --disable-pip-version-check --upgrade --force-reinstall paddlepaddle==3.2.0 paddleocr==3.3.3
+& $PythonExe -m pip install --disable-pip-version-check paddlepaddle==3.2.0 paddleocr==3.3.3
 
 $bootstrapPath = Join-Path $BootstrapDir "elochka_bootstrap_paddle_ocr.py"
 $bootstrapScript = @"

@@ -1,40 +1,137 @@
 [CmdletBinding()]
 param(
     [string]$Version = "v0.1.0",
-    [string]$RuntimeIdentifier = "win-x64"
+    [string]$RuntimeIdentifier = "win-x64",
+    [string]$ProjectRoot,
+    [string]$PythonSource,
+    [string]$ModelSource,
+    [string]$PaddlexSource,
+    [string]$ZipExe
 )
 
 $ErrorActionPreference = "Stop"
 
-$projectRoot = "F:\Projects\elochka"
-$appProject = Join-Path $projectRoot "Elochka.App\Elochka.App.csproj"
-$releaseRoot = Join-Path $projectRoot "release"
-$publishRoot = Join-Path $releaseRoot "publish"
-$packageName = "elochka-$Version-$RuntimeIdentifier"
-$packageRoot = Join-Path $releaseRoot $packageName
-$archivePath = Join-Path $releaseRoot "$packageName`_7z_lzma2_mx5_solid.7z"
-$zipExe = "F:\DevTools\ZipTools\7zip\7z.exe"
-$pythonSource = "F:\DevTools\Python311"
-$modelSource = "F:\Projects\elochka\Models\nllb-200-distilled-600m-ctranslate2"
-$paddlexSource = "F:\Projects\elochka\.paddlex-cache\official_models"
+$scriptDir = Split-Path -Parent $PSCommandPath
+if ([string]::IsNullOrWhiteSpace($ProjectRoot))
+{
+    $ProjectRoot = Split-Path -Parent $scriptDir
+}
 
-function Reset-Directory {
+function Resolve-DirectoryWithPython
+{
+    param([string]$Candidate)
+
+    if ([string]::IsNullOrWhiteSpace($Candidate))
+    {
+        return $null
+    }
+
+    if (Test-Path -LiteralPath $Candidate -PathType Leaf)
+    {
+        $candidateFile = (Resolve-Path -LiteralPath $Candidate).Path
+        if ([System.IO.Path]::GetFileName($candidateFile).Equals("python.exe", [System.StringComparison]::OrdinalIgnoreCase))
+        {
+            return Split-Path -Parent $candidateFile
+        }
+    }
+
+    if (Test-Path -LiteralPath $Candidate -PathType Container)
+    {
+        $resolved = (Resolve-Path -LiteralPath $Candidate).Path
+        if (Test-Path -LiteralPath (Join-Path $resolved "python.exe") -PathType Leaf)
+        {
+            return $resolved
+        }
+    }
+
+    return $null
+}
+
+function Resolve-PythonRuntimeRoot
+{
+    param([string]$ExplicitPath)
+
+    $candidates = @(
+        $ExplicitPath,
+        $env:ELOCHKA_PYTHON_ROOT,
+        $env:ELOCHKA_PYTHON,
+        (Join-Path $ProjectRoot "python"),
+        (Join-Path $ProjectRoot "python\python.exe"),
+        "F:\DevTools\Python311",
+        "F:\DevTools\Python311\python.exe"
+    )
+
+    foreach ($candidate in $candidates)
+    {
+        $resolved = Resolve-DirectoryWithPython -Candidate $candidate
+        if ($resolved)
+        {
+            return $resolved
+        }
+    }
+
+    $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCommand)
+    {
+        return Split-Path -Parent $pythonCommand.Source
+    }
+
+    throw "Python runtime root not found. Provide -PythonSource or set ELOCHKA_PYTHON/ELOCHKA_PYTHON_ROOT."
+}
+
+function Resolve-7ZipExecutable
+{
+    param([string]$ExplicitPath)
+
+    $candidates = @(
+        $ExplicitPath,
+        "F:\DevTools\ZipTools\7zip\7z.exe",
+        "7z"
+    ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+    foreach ($candidate in $candidates)
+    {
+        if ([System.IO.Path]::IsPathRooted($candidate))
+        {
+            if (Test-Path -LiteralPath $candidate -PathType Leaf)
+            {
+                return (Resolve-Path -LiteralPath $candidate).Path
+            }
+        }
+        else
+        {
+            $command = Get-Command $candidate -ErrorAction SilentlyContinue
+            if ($command)
+            {
+                return $command.Source
+            }
+        }
+    }
+
+    throw "7z executable not found. Provide -ZipExe or install 7-Zip."
+}
+
+function Reset-Directory
+{
     param([string]$Path)
 
-    if (Test-Path -LiteralPath $Path) {
+    if (Test-Path -LiteralPath $Path)
+    {
         Remove-Item -LiteralPath $Path -Recurse -Force
     }
 
     New-Item -ItemType Directory -Path $Path | Out-Null
 }
 
-function Copy-DirectoryContent {
+function Copy-DirectoryContent
+{
     param(
         [string]$Source,
         [string]$Destination
     )
 
-    if (-not (Test-Path -LiteralPath $Source)) {
+    if (-not (Test-Path -LiteralPath $Source))
+    {
         throw "Required path not found: $Source"
     }
 
@@ -42,7 +139,8 @@ function Copy-DirectoryContent {
     Copy-Item -Path (Join-Path $Source "*") -Destination $Destination -Recurse -Force
 }
 
-function Write-ReleaseSettings {
+function Write-ReleaseSettings
+{
     param([string]$Path)
 
     $content = @"
@@ -68,33 +166,54 @@ OfflinePythonPath=
     Set-Content -Path $Path -Value $content -Encoding UTF8
 }
 
-function Write-ReleaseReadme {
+function Write-ReleaseReadme
+{
     param([string]$Path)
 
     $content = @"
 # Elochka Release
 
-## Что внутри
-- `Elochka.App.exe` - основной исполняемый файл.
-- `python\` - встроенный Python runtime для локального OCR и перевода.
-- `offline-models\` - локальная модель перевода.
-- `paddlex-cache\official_models\` - локальные OCR-модели PaddleOCR.
+## Contents
+- `Elochka.App.exe` - main executable.
+- `python\` - bundled Python runtime for local OCR and translation.
+- `offline-models\` - bundled local translation model.
+- `paddlex-cache\official_models\` - bundled PaddleOCR models.
 
-## Запуск
-1. Распакуйте папку целиком в любое место на диске.
-2. Запустите `Elochka.App.exe`.
-3. При первом старте приложение создаст `settings.ini` рядом с exe, если файла ещё нет.
+## Run
+1. Extract the folder anywhere on disk.
+2. Start `Elochka.App.exe`.
+3. On first run the app will create `settings.ini` next to the executable if it is missing.
 
-## Требования
-- Windows 10 x64 или новее.
-- Никакие отдельные установки Python/.NET не нужны.
+## Requirements
+- Windows 10 x64 or newer.
+- No separate Python or .NET installation is required for this packaged build.
 
-## Замечания
-- Не удаляйте подпапки `python`, `offline-models` и `paddlex-cache`.
-- Приложение работает полностью локально в режиме `LocalNllb`.
+## Notes
+- Do not delete the `python`, `offline-models`, or `paddlex-cache` folders.
+- This build runs fully locally with the bundled NLLB and PaddleOCR stacks.
 "@
 
     Set-Content -Path $Path -Value $content -Encoding UTF8
+}
+
+$appProject = Join-Path $ProjectRoot "Elochka.App\Elochka.App.csproj"
+$releaseRoot = Join-Path $ProjectRoot "release"
+$publishRoot = Join-Path $releaseRoot "publish"
+$packageName = "elochka-$Version-$RuntimeIdentifier"
+$packageRoot = Join-Path $releaseRoot $packageName
+$archivePath = Join-Path $releaseRoot "$packageName`_7z_lzma2_mx5_solid.7z"
+
+$ZipExe = Resolve-7ZipExecutable -ExplicitPath $ZipExe
+$PythonSource = Resolve-PythonRuntimeRoot -ExplicitPath $PythonSource
+
+if ([string]::IsNullOrWhiteSpace($ModelSource))
+{
+    $ModelSource = Join-Path $ProjectRoot "Models\nllb-200-distilled-600m-ctranslate2"
+}
+
+if ([string]::IsNullOrWhiteSpace($PaddlexSource))
+{
+    $PaddlexSource = Join-Path $ProjectRoot ".paddlex-cache\official_models"
 }
 
 Write-Host "Stopping running Elochka.App processes..."
@@ -116,7 +235,8 @@ dotnet publish $appProject `
     /p:DebugSymbols=false `
     -o $publishRoot
 
-if ($LASTEXITCODE -ne 0) {
+if ($LASTEXITCODE -ne 0)
+{
     throw "dotnet publish failed with exit code $LASTEXITCODE"
 }
 
@@ -137,9 +257,11 @@ $pythonRootFiles = @(
     "LICENSE.txt"
 )
 
-foreach ($fileName in $pythonRootFiles) {
-    $sourceFile = Join-Path $pythonSource $fileName
-    if (Test-Path -LiteralPath $sourceFile) {
+foreach ($fileName in $pythonRootFiles)
+{
+    $sourceFile = Join-Path $PythonSource $fileName
+    if (Test-Path -LiteralPath $sourceFile)
+    {
         Copy-Item -LiteralPath $sourceFile -Destination (Join-Path $pythonDestination $fileName) -Force
     }
 }
@@ -150,17 +272,18 @@ $pythonDirectories = @(
     "Scripts"
 )
 
-foreach ($directoryName in $pythonDirectories) {
-    Copy-DirectoryContent -Source (Join-Path $pythonSource $directoryName) -Destination (Join-Path $pythonDestination $directoryName)
+foreach ($directoryName in $pythonDirectories)
+{
+    Copy-DirectoryContent -Source (Join-Path $PythonSource $directoryName) -Destination (Join-Path $pythonDestination $directoryName)
 }
 
 Write-Host "Copying offline translation model..."
 $offlineModelsRoot = Join-Path $packageRoot "offline-models"
-Copy-DirectoryContent -Source $modelSource -Destination (Join-Path $offlineModelsRoot "nllb-200-distilled-600m-ctranslate2")
+Copy-DirectoryContent -Source $ModelSource -Destination (Join-Path $offlineModelsRoot "nllb-200-distilled-600m-ctranslate2")
 
 Write-Host "Copying PaddleOCR cached models..."
 $paddlexDestination = Join-Path $packageRoot "paddlex-cache\official_models"
-Copy-DirectoryContent -Source $paddlexSource -Destination $paddlexDestination
+Copy-DirectoryContent -Source $PaddlexSource -Destination $paddlexDestination
 New-Item -ItemType Directory -Path (Join-Path $packageRoot "paddle-home") -Force | Out-Null
 New-Item -ItemType Directory -Path (Join-Path $packageRoot "ocr-cache") -Force | Out-Null
 
@@ -168,14 +291,16 @@ Write-Host "Writing default runtime files..."
 Write-ReleaseSettings -Path (Join-Path $packageRoot "settings.ini")
 Write-ReleaseReadme -Path (Join-Path $packageRoot "README.txt")
 
-if (Test-Path -LiteralPath $archivePath) {
+if (Test-Path -LiteralPath $archivePath)
+{
     Remove-Item -LiteralPath $archivePath -Force
 }
 
 Write-Host "Creating archive..."
-& $zipExe a -t7z $archivePath $packageRoot "-m0=lzma2" "-mx=5" "-ms=on" | Out-Null
+& $ZipExe a -t7z $archivePath $packageRoot "-m0=lzma2" "-mx=5" "-ms=on" | Out-Null
 
-if ($LASTEXITCODE -ne 0) {
+if ($LASTEXITCODE -ne 0)
+{
     throw "7z packaging failed with exit code $LASTEXITCODE"
 }
 

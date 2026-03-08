@@ -10,7 +10,7 @@ namespace Elochka.App.Services;
 internal sealed class PaddleOcrTextService : ITextRecognitionService, IDisposable
 {
     private const string DefaultPythonPath = @"F:\DevTools\Python311\python.exe";
-    private const string SetupScriptPath = @"F:\Projects\elochka\scripts\setup_local_paddle_ocr.ps1";
+    private const string SetupScriptPath = @"scripts\setup_local_paddle_ocr.ps1";
     private const string PythonEnvVar = "ELOCHKA_PYTHON";
     private const string PaddleHomeEnvVar = "ELOCHKA_PADDLE_HOME";
     private const string PaddlexCacheHomeEnvVar = "ELOCHKA_PADDLEX_CACHE_HOME";
@@ -310,7 +310,7 @@ internal sealed class PaddleOcrTextService : ITextRecognitionService, IDisposabl
         }
 
         throw new InvalidOperationException(
-            $"Offline Python runtime not found. Install it on F: or set {PythonEnvVar}."
+            $"Offline Python runtime not found. Install Python 3.11+ and set {PythonEnvVar} if needed."
         );
     }
 

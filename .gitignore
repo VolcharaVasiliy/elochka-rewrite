@@ -8,6 +8,7 @@
 .paddlex-cache/
 .hf-home/
 .hf-source/
+.pip-cache/
 release/
 
 # Local models and generated offline assets

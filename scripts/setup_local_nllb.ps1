@@ -1,22 +1,102 @@
+[CmdletBinding()]
 param(
-    [string]$PythonExe = "F:\DevTools\Python311\python.exe",
-    [string]$SourceDir = "F:\Projects\elochka\.hf-source\nllb-200-distilled-600m",
-    [string]$ModelDir = "F:\Projects\elochka\Models\nllb-200-distilled-600m-ctranslate2",
-    [string]$CacheDir = "F:\Projects\elochka\.hf-home",
-    [string]$PipCacheDir = "F:\DevTools\pip-cache"
+    [string]$ProjectRoot,
+    [string]$PythonExe,
+    [string]$SourceDir,
+    [string]$ModelDir,
+    [string]$CacheDir,
+    [string]$PipCacheDir
 )
 
 $ErrorActionPreference = "Stop"
 
-if (-not (Test-Path -LiteralPath $PythonExe))
+$scriptDir = Split-Path -Parent $PSCommandPath
+if ([string]::IsNullOrWhiteSpace($ProjectRoot))
 {
-    throw "Python runtime not found: $PythonExe"
+    $ProjectRoot = Split-Path -Parent $scriptDir
 }
 
-$converterExe = "F:\DevTools\Python311\Scripts\ct2-transformers-converter.exe"
-if (-not (Test-Path -LiteralPath $converterExe))
+function Resolve-PythonExecutable
 {
-    throw "CTranslate2 converter not found: $converterExe"
+    param([string]$ExplicitPath)
+
+    $rootedCandidates = @(
+        $ExplicitPath,
+        $env:ELOCHKA_PYTHON,
+        (Join-Path $ProjectRoot "python\python.exe"),
+        "F:\DevTools\Python311\python.exe"
+    ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+
+    foreach ($candidate in $rootedCandidates)
+    {
+        if (Test-Path -LiteralPath $candidate -PathType Leaf)
+        {
+            return (Resolve-Path -LiteralPath $candidate).Path
+        }
+    }
+
+    $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCommand)
+    {
+        return $pythonCommand.Source
+    }
+
+    throw "Python runtime not found. Install Python 3.11+ or set ELOCHKA_PYTHON/-PythonExe."
+}
+
+function Resolve-ConverterExecutable
+{
+    param([string]$ResolvedPythonExe)
+
+    $pythonRoot = Split-Path -Parent $ResolvedPythonExe
+    $candidates = @(
+        (Join-Path $pythonRoot "Scripts\ct2-transformers-converter.exe"),
+        (Join-Path $pythonRoot "Scripts\ct2-transformers-converter"),
+        "ct2-transformers-converter"
+    )
+
+    foreach ($candidate in $candidates)
+    {
+        if ([System.IO.Path]::IsPathRooted($candidate))
+        {
+            if (Test-Path -LiteralPath $candidate -PathType Leaf)
+            {
+                return (Resolve-Path -LiteralPath $candidate).Path
+            }
+        }
+        else
+        {
+            $command = Get-Command $candidate -ErrorAction SilentlyContinue
+            if ($command)
+            {
+                return $command.Source
+            }
+        }
+    }
+
+    throw "CTranslate2 converter not found. Reinstall CTranslate2 into the selected Python runtime."
+}
+
+$PythonExe = Resolve-PythonExecutable -ExplicitPath $PythonExe
+
+if ([string]::IsNullOrWhiteSpace($SourceDir))
+{
+    $SourceDir = Join-Path $ProjectRoot ".hf-source\nllb-200-distilled-600m"
+}
+
+if ([string]::IsNullOrWhiteSpace($ModelDir))
+{
+    $ModelDir = Join-Path $ProjectRoot "Models\nllb-200-distilled-600m-ctranslate2"
+}
+
+if ([string]::IsNullOrWhiteSpace($CacheDir))
+{
+    $CacheDir = Join-Path $ProjectRoot ".hf-home"
+}
+
+if ([string]::IsNullOrWhiteSpace($PipCacheDir))
+{
+    $PipCacheDir = Join-Path $ProjectRoot ".pip-cache"
 }
 
 New-Item -ItemType Directory -Force -Path $SourceDir | Out-Null
@@ -30,6 +110,8 @@ $env:HF_HUB_DISABLE_SYMLINKS_WARNING = "1"
 
 & $PythonExe -m pip install --disable-pip-version-check ctranslate2 sentencepiece transformers huggingface-hub protobuf safetensors
 & $PythonExe -m pip install --disable-pip-version-check torch --index-url https://download.pytorch.org/whl/cpu
+
+$converterExe = Resolve-ConverterExecutable -ResolvedPythonExe $PythonExe
 
 if (-not (Test-Path -LiteralPath (Join-Path $SourceDir "config.json")))
 {
@@ -70,6 +152,7 @@ if (Test-Path -LiteralPath $ModelDir)
 {
     Remove-Item -LiteralPath $ModelDir -Recurse -Force
 }
+
 New-Item -ItemType Directory -Force -Path $ModelDir | Out-Null
 
 & $converterExe `

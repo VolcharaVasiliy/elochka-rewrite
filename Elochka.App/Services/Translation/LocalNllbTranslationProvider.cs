@@ -16,7 +16,7 @@ internal sealed class LocalNllbTranslationProvider : ITranslationProvider, IDisp
     private const int WorkerThreadCount = 2;
     private const int WorkerBeamSize = 1;
     private const string ModelFolderName = "nllb-200-distilled-600m-ctranslate2";
-    private const string SetupScriptPath = @"F:\Projects\elochka\scripts\setup_local_nllb.ps1";
+    private const string SetupScriptPath = @"scripts\setup_local_nllb.ps1";
     private const string DefaultPythonPath = @"F:\DevTools\Python311\python.exe";
     private const string PythonEnvVar = "ELOCHKA_PYTHON";
     private const string ModelEnvVar = "ELOCHKA_OFFLINE_MODEL";
@@ -1276,7 +1276,7 @@ internal sealed class LocalNllbTranslationProvider : ITranslationProvider, IDisp
         }
 
         throw new InvalidOperationException(
-            $"Offline Python runtime not found. Install it on F: or set {PythonEnvVar}/OfflinePythonPath.");
+            $"Offline Python runtime not found. Install Python 3.11+ and set {PythonEnvVar}/OfflinePythonPath if needed.");
     }
 
     private static string ResolveScriptPath()
