@@ -6,7 +6,7 @@ namespace Elochka.App.Services;
 
 internal sealed class CaptureTranslationPipeline
 {
-    private static readonly string DebugLogPath = Path.Combine(AppContext.BaseDirectory, "pipeline-debug.log");
+    private static readonly string DebugLogPath = ElochkaPaths.PipelineDebugLogPath;
     private static readonly object DebugLogSync = new();
 
     private readonly ScreenCaptureService _screenCaptureService;

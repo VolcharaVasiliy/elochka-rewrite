@@ -21,7 +21,7 @@ internal sealed class LocalNllbTranslationProvider : ITranslationProvider, IDisp
     private const string PythonEnvVar = "ELOCHKA_PYTHON";
     private const string ModelEnvVar = "ELOCHKA_OFFLINE_MODEL";
     private static readonly TimeSpan WorkerIdleLifetime = TimeSpan.FromMinutes(10);
-    private static readonly string DebugLogPath = Path.Combine(AppContext.BaseDirectory, "translation-debug.log");
+    private static readonly string DebugLogPath = ElochkaPaths.TranslationDebugLogPath;
     private static readonly UTF8Encoding Utf8NoBom = new(encoderShouldEmitUTF8Identifier: false);
     private static readonly Regex SentenceBoundaryRegex = new(@"(?<=[\.\!\?\;\:])\s+", RegexOptions.Compiled);
     private static readonly Regex EnglishSpanRegex = new(@"[A-Za-z][A-Za-z0-9_'.&/+:-]*(?:\s+[A-Za-z][A-Za-z0-9_'.&/+:-]*)*", RegexOptions.Compiled);

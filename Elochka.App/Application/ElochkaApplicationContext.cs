@@ -34,7 +34,8 @@ internal sealed class ElochkaApplicationContext : ApplicationContext
 
     public ElochkaApplicationContext()
     {
-        _settingsStore = new SettingsStore(Path.Combine(AppContext.BaseDirectory, "settings.ini"));
+        ElochkaPaths.MigrateLegacySettingsIfNeeded();
+        _settingsStore = new SettingsStore(ElochkaPaths.SettingsFilePath);
         _settings = _settingsStore.Load();
 
         _httpClient = new HttpClient

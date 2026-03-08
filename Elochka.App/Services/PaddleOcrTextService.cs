@@ -39,8 +39,7 @@ internal sealed class PaddleOcrTextService : ITextRecognitionService, IDisposabl
 
     public PaddleOcrTextService()
     {
-        _cacheDirectory = Path.Combine(AppContext.BaseDirectory, "ocr-cache");
-        Directory.CreateDirectory(_cacheDirectory);
+        _cacheDirectory = ElochkaPaths.OcrCacheDirectory;
     }
 
     public async Task<string> RecognizeAsync(Bitmap bitmap, CancellationToken cancellationToken)
@@ -210,6 +209,7 @@ internal sealed class PaddleOcrTextService : ITextRecognitionService, IDisposabl
         startInfo.Environment["PADDLE_HOME"] = paddleHome;
         startInfo.Environment["PADDLE_PDX_CACHE_HOME"] = paddlexCacheHome;
         startInfo.Environment["PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK"] = "True";
+        startInfo.Environment["DISABLE_MODEL_SOURCE_CHECK"] = "True";
         startInfo.Environment["OMP_NUM_THREADS"] = WorkerThreadCount.ToString();
         startInfo.Environment["MKL_NUM_THREADS"] = WorkerThreadCount.ToString();
 
@@ -330,8 +330,7 @@ internal sealed class PaddleOcrTextService : ITextRecognitionService, IDisposabl
         var candidates = new[]
         {
             Environment.GetEnvironmentVariable(PaddleHomeEnvVar),
-            Path.Combine(AppContext.BaseDirectory, "paddle-home"),
-            @"F:\Projects\elochka\.paddle-home",
+            ElochkaPaths.PaddleHomeDirectory,
         };
 
         foreach (var candidate in candidates)
@@ -359,8 +358,7 @@ internal sealed class PaddleOcrTextService : ITextRecognitionService, IDisposabl
         var candidates = new[]
         {
             Environment.GetEnvironmentVariable(PaddlexCacheHomeEnvVar),
-            Path.Combine(AppContext.BaseDirectory, "paddlex-cache"),
-            @"F:\Projects\elochka\.paddlex-cache",
+            ElochkaPaths.ResolvePaddlexCacheHome(),
         };
 
         foreach (var candidate in candidates)

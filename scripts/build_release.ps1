@@ -182,7 +182,7 @@ function Write-ReleaseReadme
 ## Run
 1. Extract the folder anywhere on disk.
 2. Start `Elochka.App.exe`.
-3. On first run the app will create `settings.ini` next to the executable if it is missing.
+3. On first run the app will create its user data under `C:\Users\Public\Documents\Elochka`.
 
 ## Requirements
 - Windows 10 x64 or newer.
@@ -191,6 +191,7 @@ function Write-ReleaseReadme
 ## Notes
 - Do not delete the `python`, `offline-models`, or `paddlex-cache` folders.
 - This build runs fully locally with the bundled NLLB and PaddleOCR stacks.
+- Runtime settings, logs, OCR cache, and fallback Paddle runtime files live under `C:\Users\Public\Documents\Elochka`.
 "@
 
     Set-Content -Path $Path -Value $content -Encoding UTF8
