@@ -23,6 +23,9 @@ Elochka.App/python/
 settings.ini
 Elochka.App/bin/**/translation-debug.log
 Elochka.App/bin/**/pipeline-debug.log
+*.csproj.user
+__pycache__/
+*.pyc
 
 # Transfer and temporary launchers
 *.tmp
