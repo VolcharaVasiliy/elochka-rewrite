@@ -1,0 +1,12 @@
+﻿{
+    "productName":  "Berezka",
+    "versionTag":  "v0.1.2",
+    "downloadUrl":  "https://github.com/VolcharaVasiliy/elochka-rewrite/releases/download/v0.1.2/berezka-v0.1.2-win-x64_7z_lzma2_mx5_solid.7z",
+    "archiveName":  "berezka-v0.1.2-win-x64_7z_lzma2_mx5_solid.7z",
+    "archiveSizeBytes":  1014568592,
+    "archiveSha256":  "3A20FBC1AA616678858210A3EE1FB826938E81B8FED303D51ADB0C3DD4D15036",
+    "mainExecutableRelativePath":  "Berezka.App.exe",
+    "shortcutName":  "Berezka",
+    "defaultInstallSubdirectory":  "Berezka",
+    "releasePageUrl":  "https://github.com/VolcharaVasiliy/elochka-rewrite/releases/tag/v0.1.2"
+}

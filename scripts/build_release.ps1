@@ -53,6 +53,8 @@ function Resolve-PythonRuntimeRoot
 
     $candidates = @(
         $ExplicitPath,
+        $env:BEREZKA_PYTHON_ROOT,
+        $env:BEREZKA_PYTHON,
         $env:ELOCHKA_PYTHON_ROOT,
         $env:ELOCHKA_PYTHON,
         (Join-Path $ProjectRoot "python"),
@@ -76,7 +78,7 @@ function Resolve-PythonRuntimeRoot
         return Split-Path -Parent $pythonCommand.Source
     }
 
-    throw "Python runtime root not found. Provide -PythonSource or set ELOCHKA_PYTHON/ELOCHKA_PYTHON_ROOT."
+    throw "Python runtime root not found. Provide -PythonSource or set BEREZKA_PYTHON/BEREZKA_PYTHON_ROOT."
 }
 
 function Resolve-7ZipExecutable
@@ -197,7 +199,7 @@ function Write-ReleaseReadme
     Set-Content -Path $Path -Value $content -Encoding UTF8
 }
 
-$appProject = Join-Path $ProjectRoot "Elochka.App\Elochka.App.csproj"
+$appProject = Join-Path $ProjectRoot "Berezka.App\Berezka.App.csproj"
 $releaseRoot = Join-Path $ProjectRoot "release"
 $publishRoot = Join-Path $releaseRoot "publish"
 $packageName = "berezka-$Version-$RuntimeIdentifier"
@@ -218,7 +220,7 @@ if ([string]::IsNullOrWhiteSpace($PaddlexSource))
 }
 
 Write-Host "Stopping running Berezka.App processes..."
-Get-Process -Name "Berezka.App","Elochka.App" -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Process -Name "Berezka.App","Berezka.App" -ErrorAction SilentlyContinue | Stop-Process -Force
 
 Write-Host "Preparing release directories..."
 New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null

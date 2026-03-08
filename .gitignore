@@ -14,18 +14,18 @@ release/
 
 # Local models and generated offline assets
 Models/
-Elochka.App/ocr-cache/
-Elochka.App/paddle-home/
-Elochka.App/paddlex-cache/
-Elochka.App/offline-models/
-Elochka.App/python/
-Elochka.Installer/Tools/
+Berezka.App/ocr-cache/
+Berezka.App/paddle-home/
+Berezka.App/paddlex-cache/
+Berezka.App/offline-models/
+Berezka.App/python/
+Berezka.Installer/Tools/
 
 # Logs and local settings
 *.log
 settings.ini
-Elochka.App/bin/**/translation-debug.log
-Elochka.App/bin/**/pipeline-debug.log
+Berezka.App/bin/**/translation-debug.log
+Berezka.App/bin/**/pipeline-debug.log
 *.csproj.user
 __pycache__/
 *.pyc

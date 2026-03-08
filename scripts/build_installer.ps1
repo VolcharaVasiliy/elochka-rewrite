@@ -42,8 +42,8 @@ function Reset-Directory
     New-Item -ItemType Directory -Path $Path | Out-Null
 }
 
-$installerProjectRoot = Join-Path $ProjectRoot "Elochka.Installer"
-$installerProjectPath = Join-Path $installerProjectRoot "Elochka.Installer.csproj"
+$installerProjectRoot = Join-Path $ProjectRoot "Berezka.Installer"
+$installerProjectPath = Join-Path $installerProjectRoot "Berezka.Installer.csproj"
 $installerToolsRoot = Join-Path $installerProjectRoot "Tools"
 $installerCacheRoot = Join-Path $ProjectRoot ".installer-cache"
 $downloadCacheRoot = Join-Path $installerCacheRoot "downloads"

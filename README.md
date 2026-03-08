@@ -1,10 +1,10 @@
-# Berezka Rewrite
+# Berezka
 
 Windows tray OCR translator focused on game overlays and low-latency local translation.
 
 ## What Is In Git
-- Full WinForms application sources in `Elochka.App/`
-- Python OCR/translation worker scripts in `Elochka.App/Scripts/`
+- Full WinForms application sources in `Berezka.App/`
+- Python OCR/translation worker scripts in `Berezka.App/Scripts/`
 - Bootstrap and release scripts in `scripts/`
 - Solution and project files needed to continue development from a clean clone
 
@@ -61,7 +61,7 @@ dotnet build .\Berezka.sln
 
 ## Run From Source Tree
 ```powershell
-.\Elochka.App\bin\Debug\net7.0-windows10.0.19041.0\Berezka.App.exe
+.\Berezka.App\bin\Debug\net7.0-windows10.0.19041.0\Berezka.App.exe
 ```
 
 ## Build Portable Release

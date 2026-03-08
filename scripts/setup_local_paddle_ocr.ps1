@@ -22,6 +22,7 @@ function Resolve-PythonExecutable
 
     $rootedCandidates = @(
         $ExplicitPath,
+        $env:BEREZKA_PYTHON,
         $env:ELOCHKA_PYTHON,
         (Join-Path $ProjectRoot "python\python.exe"),
         "F:\DevTools\Python311\python.exe"
@@ -41,7 +42,7 @@ function Resolve-PythonExecutable
         return $pythonCommand.Source
     }
 
-    throw "Python runtime not found. Install Python 3.11+ or set ELOCHKA_PYTHON/-PythonExe."
+    throw "Python runtime not found. Install Python 3.11+ or set BEREZKA_PYTHON/-PythonExe."
 }
 
 $PythonExe = Resolve-PythonExecutable -ExplicitPath $PythonExe
@@ -76,9 +77,22 @@ $env:PADDLE_HOME = $PaddleHome
 $env:PADDLE_PDX_CACHE_HOME = $PaddlexCacheHome
 $env:PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK = "True"
 
-& $PythonExe -m pip install --disable-pip-version-check paddlepaddle==3.2.0 paddleocr==3.3.3
+$pipInstallArgs = @(
+    "-m",
+    "pip",
+    "install",
+    "--disable-pip-version-check",
+    "--default-timeout",
+    "1000",
+    "--retries",
+    "10",
+    "paddlepaddle==3.2.0",
+    "paddleocr==3.3.3"
+)
 
-$bootstrapPath = Join-Path $BootstrapDir "elochka_bootstrap_paddle_ocr.py"
+& $PythonExe @pipInstallArgs
+
+$bootstrapPath = Join-Path $BootstrapDir "berezka_bootstrap_paddle_ocr.py"
 $bootstrapScript = @"
 from paddleocr import PaddleOCR
 
@@ -91,7 +105,7 @@ ocr = PaddleOCR(
 print("paddle ocr ready")
 "@
 
-Set-Content -LiteralPath $bootstrapPath -Value $bootstrapScript -Encoding UTF8
+[System.IO.File]::WriteAllText($bootstrapPath, $bootstrapScript, (New-Object System.Text.UTF8Encoding($false)))
 
 try
 {

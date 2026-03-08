@@ -22,6 +22,7 @@ function Resolve-PythonExecutable
 
     $rootedCandidates = @(
         $ExplicitPath,
+        $env:BEREZKA_PYTHON,
         $env:ELOCHKA_PYTHON,
         (Join-Path $ProjectRoot "python\python.exe"),
         "F:\DevTools\Python311\python.exe"
@@ -41,7 +42,7 @@ function Resolve-PythonExecutable
         return $pythonCommand.Source
     }
 
-    throw "Python runtime not found. Install Python 3.11+ or set ELOCHKA_PYTHON/-PythonExe."
+    throw "Python runtime not found. Install Python 3.11+ or set BEREZKA_PYTHON/-PythonExe."
 }
 
 function Resolve-ConverterExecutable
